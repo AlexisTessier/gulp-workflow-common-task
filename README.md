@@ -1,11 +1,11 @@
-@alexistessier/gulp-workflow-common-task - 1.0.1
+@alexistessier/gulp-workflow-common-task - 1.0.2
 ================
 
-[![master version](https://img.shields.io/badge/master%20version-1.0.1-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
-[![npm version](https://badge.fury.io/js/@alexistessier/gulp-workflow-common-task.svg)](https://badge.fury.io/js/@alexistessier/gulp-workflow-common-task)
+[![master version](https://img.shields.io/badge/master%20version-1.0.2-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
+[![npm version](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task.svg)](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task)
 
-[![Dependency Status](https://david-dm.org/AlexisTessier/@alexistessier/gulp-workflow-common-task.svg)](https://david-dm.org/AlexisTessier/@alexistessier/gulp-workflow-common-task)
-[![devDependency Status](https://david-dm.org/AlexisTessier/@alexistessier/gulp-workflow-common-task/dev-status.svg)](https://david-dm.org/AlexisTessier/@alexistessier/gulp-workflow-common-task#info=devDependencies)
+[![Dependency Status](https://david-dm.org/AlexisTessier/gulp-workflow-common-task.svg)](https://david-dm.org/AlexisTessier/gulp-workflow-common-task)
+[![devDependency Status](https://david-dm.org/AlexisTessier/gulp-workflow-common-task/dev-status.svg)](https://david-dm.org/AlexisTessier/gulp-workflow-common-task#info=devDependencies)
 
 [Home Page](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
 

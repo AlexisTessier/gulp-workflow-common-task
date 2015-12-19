@@ -10,6 +10,11 @@ var task = require('./index');
 /*--------------------*/
 
 var _package = require('./package');
+var username = 'AlexisTessier';
+var lowerUsername = username.toLowerCase();
+_package.rawName = _package.name.replace('@'+lowerUsername+'/' , '');
+var furyiopath = '%40'+lowerUsername+'%2F'+_package.rawName;
+
 
 var example = [
 	"var gulp = require('gulp');",
@@ -58,9 +63,10 @@ task.mustache(gulp, {
 	],
 	view: {
 		package: _package,
-		username: 'AlexisTessier',
+		username: username,
 		example: example,
-		api: api.join('\n')
+		api: api.join('\n'),
+		furyiopath: furyiopath
 	},
 	destExt: '.md'
 });

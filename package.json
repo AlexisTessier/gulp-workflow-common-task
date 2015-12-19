@@ -1,6 +1,6 @@
 {
   "name": "@alexistessier/gulp-workflow-common-task",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A set of common gulp task I use",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,6 @@
   },
   "homepage": "https://github.com/AlexisTessier/gulp-workflow-common-task#readme",
   "dependencies": {
-    "gulp": "^3.9.0",
     "gulp-babel": "^6.1.1",
     "gulp-batch": "^1.0.5",
     "gulp-mustache": "^2.2.0",
@@ -34,6 +33,7 @@
     "gulp-watch": "^4.3.5"
   },
   "devDependencies": {
+    "gulp": "^3.9.0",
     "unindent": "^2.0.0"
   }
 }
