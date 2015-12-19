@@ -1,0 +1,38 @@
+{{& package.name}} - {{& package.version}}
+================
+
+[![master version](https://img.shields.io/badge/master%20version-{{package.version}}-blue.svg)]({{& package.homepage}})
+[![npm version](https://badge.fury.io/js/karma-custom.svg)](https://badge.fury.io/js/{{& package.name}})
+
+[![Dependency Status](https://david-dm.org/{{& username}}/{{& package.name}}.svg)](https://david-dm.org/{{& username}}/{{& package.name}})
+[![devDependency Status](https://david-dm.org/{{username}}/{{package.name}}/dev-status.svg)](https://david-dm.org/{{& username}}/{{& package.name}}#info=devDependencies)
+
+[Home Page]({{& package.homepage}})
+
+{{& package.description}}
+
+Purpose
+-------
+
+Reuse some gulp tasks through projects
+
+Install
+-------
+
+```
+npm install {{& package.name}}
+```
+
+How to use
+----------
+
+Use one of task you want to define.
+
+```javascript
+{{& example}}
+```
+
+Task list
+---------
+
+{{& api}}
