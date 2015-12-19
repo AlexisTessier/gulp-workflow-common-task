@@ -1,7 +1,6 @@
-@alexistessier/gulp-workflow-common-task - 1.0.2
+@alexistessier/gulp-workflow-common-task [![master version](https://img.shields.io/badge/master%20version-1.0.3-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
 ================
 
-[![master version](https://img.shields.io/badge/master%20version-1.0.2-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
 [![npm version](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task.svg)](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task)
 
 [![Dependency Status](https://david-dm.org/AlexisTessier/gulp-workflow-common-task.svg)](https://david-dm.org/AlexisTessier/gulp-workflow-common-task)
