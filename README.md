@@ -1,7 +1,7 @@
 @alexistessier/gulp-workflow-common-task
 ================
 
-[![version](https://img.shields.io/badge/version-1.0.3-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
+[![version](https://img.shields.io/badge/version-1.0.4-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
 [![npm version](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task.svg)](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task)
 
 [![Dependency Status](https://david-dm.org/AlexisTessier/gulp-workflow-common-task.svg)](https://david-dm.org/AlexisTessier/gulp-workflow-common-task)
@@ -83,8 +83,8 @@ gulp.task('mustache', function(done) {
 		.pipe(plumber())
 		.pipe(mustache(params.view || {}))
 		.pipe(rename(function (path) {
-		    path.basename = path.basename.replace(params.destExt || '.html', '');
-		    path.extname = params.destExt || '.html';
+			path.basename = path.basename.replace(params.destExt || '.html', '');
+			path.extname = params.destExt || '.html';
 		}))
 		.pipe(gulp.dest(params.dest || './'))
 		.on('end', function() {

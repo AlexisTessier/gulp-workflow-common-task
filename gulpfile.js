@@ -15,26 +15,6 @@ var lowerUsername = username.toLowerCase();
 _package.rawName = _package.name.replace('@'+lowerUsername+'/' , '');
 var furyiopath = '%40'+lowerUsername+'%2F'+_package.rawName;
 
-
-var example = [
-	"var gulp = require('gulp');",
-	"var task = require('"+_package.name+"');",
-	"",
-	"//This example set a babel task",
-	"task.babel(gulp, {",
-	"	src: [",
-	'		path.join(__dirname, "sources/*.js")',
-	'		path.join(__dirname, "sources/**/*.js")',
-	"	],",
-	'	dest: "build/"',
-	'});',
-	"",
-	"//Then set a build and a watch task which\n//automatically use the tasks defined before",
-
-	"task.build(gulp);",
-	"task.watch(gulp);"
-].join('\n');
-
 var api = [];
 for(var methodName in task){
 	if(methodName !== 'build' && methodName !== 'watch'){
@@ -57,19 +37,7 @@ for(var methodName in task){
 
 /*--------------------*/
 
-task.mustache(gulp, {
-	src: [
-		path.join(__dirname, 'README.mustache')
-	],
-	view: {
-		package: _package,
-		username: username,
-		example: example,
-		api: api.join('\n'),
-		furyiopath: furyiopath
-	},
-	destExt: '.md'
-});
+task.mustache(gulp, 'readme-from-mustache');
 
 /*--------------------*/
 

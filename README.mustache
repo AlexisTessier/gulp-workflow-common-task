@@ -29,8 +29,19 @@ How to use
 Use one of task you want to define.
 
 ```javascript
-{{& example}}
-```
+var gulp = require('gulp');
+var task = require('@alexistessier/gulp-workflow-common-task');
+
+//This example set a babel task
+task.babel(gulp, {
+	src: [
+		path.join(__dirname, "sources/*.js")
+	],
+	dest: "build/"
+});
+
+//Eventually you can use a one of existing presets instead
+task.babel(gulp, 'es6-for-node');
 
 Task list
 ---------
