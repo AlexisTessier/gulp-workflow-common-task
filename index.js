@@ -3,6 +3,11 @@
 var assert = require('assert');
 var path = require('path');
 
+var _ = require('lodash');
+var flatten = require('flat');
+var unflatten = flatten.unflatten;
+
+var gulp = require('gulp');
 var watch = require('gulp-watch');
 var plumber = require('gulp-plumber');
 var babel = require('gulp-babel');
@@ -11,87 +16,114 @@ var mustache = require('gulp-mustache');
 var rename = require("gulp-rename");
 var sourcemaps = require('gulp-sourcemaps');
 
-var taskList = [];
-var taskTarget = {};
+var taskList = {};
+var buildTaskList = [];
 
 var commonTask = {
-	build: function(gulp, params) {
+	build: function(params) {
 		var params = params || {};
-		gulp.task('build', taskList);
+		buildTaskList = params.taskList || _.keys(taskList);
+		gulp.task('build', buildTaskList);
 	},
-	watch: function(gulp, params) {
+	watch: function(params) {
 		var params = params || {};
-		gulp.task('watch', taskList, function () {
-			for(var i=0,imax=taskList.length;i<imax;i++){
-				var task = taskList[i];
-
-				watch(taskTarget[task], batch(function (events, done) {
-					gulp.start(task, done);
+		gulp.task('watch', buildTaskList, function () {
+			_.forEach(taskList, function(task, name) {
+				watch(task.params.src, batch(function (events, done) {
+					gulp.start(name, done);
 				}));
-			}
+			});
 		});
+	},
+	'default': function(defaultTask) {
+		gulp.task('default', typeof defaultTask === 'string' ? [defaultTask] : (defaultTask || 'build'));
 	}
 };
 
-function addCommonTask(name, task, presets){
+/*---------------------*/
+
+var presetCustomKeyCounter = 1;
+
+function _addCommonTask(name, taskSetter, presets){
 	assert(typeof presets === 'object');
-	assert(typeof presets.default === 'string' || typeof presets.default === 'object');
-	var defaultParams = typeof presets.default === 'object' ? presets.default : presets[presets.default];
-	assert(typeof defaultParams === 'object');
 
-	commonTask[name] = function(gulp, params) {
-		var params = typeof params === "object" ? params : (
-			presets[params] || defaultParams
-		);
+	var presetsDefault = presets.default || null;
+	var defaultParams = typeof presetsDefault === 'object' ? presetsDefault : (
+		typeof presetsDefault === 'string' ? (presets[presetsDefault] || null) : null
+	);
+	assert(typeof defaultParams === 'object' || typeof defaultParams === 'null');
 
-		for(var key in defaultParams){
-			params[key] = (typeof params[key] !== 'undefined' && typeof params[key] !== 'null') ? params[key] : defaultParams[key];
-		}
+	commonTask[name] = function(preset, paramsOverride, ignore) {
+		var _defaultParams = typeof defaultParams === 'null' ? null : _.cloneDeep(defaultParams);
+		var presetKey = typeof preset === 'object' ? 'custom-preset-'+(presetCustomKeyCounter++) : (preset || 'default');
+		var _preset = typeof preset === 'object' ? preset : _.cloneDeep(presets[presetKey]);
 
-		if(gulp){
-			taskList.push(name);
-			taskTarget[name] = params.src;
-			task(gulp, params);
+		if(!ignore){
+			var taskName = name+'-'+presetKey;
+			var paramsOverride = typeof paramsOverride === 'object' ? paramsOverride : {};
+
+			var flatten_params = flatten(_defaultParams || {});
+			var flatten_preset = flatten(_preset || {});
+			var flatten_override = flatten(paramsOverride);
+
+			for(var key in flatten_preset){
+				flatten_params[key] = flatten_preset[key];
+			}
+
+			for(var key in flatten_override){
+				flatten_params[key] = flatten_override[key];
+			}
+
+			var params = unflatten(flatten_params);
+
+			taskList[taskName] = {
+				params: params
+			};
+			taskSetter(taskName, params);
 		}
 		else{
-			return task;
+			return {
+				name: name,
+				task: setTask,
+				presets: presets
+			};
 		}	
 	};
 }
 
 /*-------------------------------------------*/
 
-addCommonTask('babel', function(gulp, params) {
-	gulp.task('babel', function (done) {
-		gulp.src(params.src)
-			.pipe(plumber())
-			.pipe(sourcemaps.init())
-			.pipe(babel(params.options))
-			.pipe(sourcemaps.write('.'))
-			.pipe(gulp.dest(params.dest))
+// _addCommonTask('babel', function(taskName, params) {
+// 	gulp.task(taskName, function (done) {
+// 		gulp.src(params.src)
+// 			.pipe(plumber())
+// 			.pipe(sourcemaps.init())
+// 			.pipe(babel(params.options))
+// 			.pipe(sourcemaps.write('.'))
+// 			.pipe(gulp.dest(params.dest))
 
-			.on('end', function() {
-				done();
-			});
-	});
-}, {
-	'default': 'es6-for-node',
-	'es6-for-node': {
-		src: [
-			path.join(process.cwd(), "sources/*.js"),
-			path.join(process.cwd(), "sources/**/*.js")
-		],
-		options: {
-			presets: ['babel-preset-es2015']
-		},
-		dest: "build/"
-	}
-});
+// 			.on('end', function() {
+// 				done();
+// 			});
+// 	});
+// }, {
+// 	'default': 'es6-for-node',
+// 	'es6-for-node': {
+// 		src: [
+// 			path.join(process.cwd(), "sources/*.js"),
+// 			path.join(process.cwd(), "sources/**/*.js")
+// 		],
+// 		options: {
+// 			presets: ['babel-preset-es2015']
+// 		},
+// 		dest: "build/"
+// 	}
+// });
 
-/*----------------------*/
+/*--------------------------------------------*/
 
-addCommonTask('mustache', function(gulp, params) {
-	gulp.task('mustache', function(done) {
+_addCommonTask('mustache', function(taskName, params) {
+	gulp.task(taskName, function(done) {
 		gulp.src(params.src)
 			.pipe(plumber())
 			.pipe(mustache(params.view))
@@ -105,18 +137,13 @@ addCommonTask('mustache', function(gulp, params) {
 			});
 	});	
 }, {
-	'default' : ''
-	'r' : {
+	'readme-for-node-package' : {
 		src: [
-			path.join(__dirname, 'README.mustache')
+			path.join(process.cwd(), 'README.mustache')
 		],
-		view: {
-			package: _package,
-			username: username,
-			api: api.join('\n'),
-			furyiopath: furyiopath
-		},
-		destExt: '.md'
+		view: require('./readme-for-node-package.view'),
+		destExt: '.md',
+		dest: './'
 	}
 });
 
