@@ -1,4 +1,7 @@
 README.mustache
+api-documentation-generation.js
+gulpfile.js
+example
 
 logs
 *.log

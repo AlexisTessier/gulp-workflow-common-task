@@ -53,12 +53,12 @@ function _addCommonTask(name, taskSetter, presets){
 	);
 	assert(typeof defaultParams === 'object' || typeof defaultParams === 'null');
 
-	commonTask[name] = function(preset, paramsOverride, ignore) {
+	commonTask[name] = function(preset, paramsOverride, getDescriptor) {
 		var _defaultParams = typeof defaultParams === 'null' ? null : _.cloneDeep(defaultParams);
 		var presetKey = typeof preset === 'object' ? 'custom-preset-'+(presetCustomKeyCounter++) : (preset || 'default');
 		var _preset = typeof preset === 'object' ? preset : _.cloneDeep(presets[presetKey]);
 
-		if(!ignore){
+		if(!getDescriptor){
 			var taskName = name+'-'+presetKey;
 			var paramsOverride = typeof paramsOverride === 'object' ? paramsOverride : {};
 
@@ -84,7 +84,7 @@ function _addCommonTask(name, taskSetter, presets){
 		else{
 			return {
 				name: name,
-				task: setTask,
+				task: taskSetter,
 				presets: presets
 			};
 		}	
@@ -93,34 +93,49 @@ function _addCommonTask(name, taskSetter, presets){
 
 /*-------------------------------------------*/
 
-// _addCommonTask('babel', function(taskName, params) {
-// 	gulp.task(taskName, function (done) {
-// 		gulp.src(params.src)
-// 			.pipe(plumber())
-// 			.pipe(sourcemaps.init())
-// 			.pipe(babel(params.options))
-// 			.pipe(sourcemaps.write('.'))
-// 			.pipe(gulp.dest(params.dest))
+var babelEs6ForNodeComputedParams = {
+	src: [
+		path.join(process.cwd(), "sources/**/*.js")
+	]
+};
 
-// 			.on('end', function() {
-// 				done();
-// 			});
-// 	});
-// }, {
-// 	'default': 'es6-for-node',
-// 	'es6-for-node': {
-// 		src: [
-// 			path.join(process.cwd(), "sources/*.js"),
-// 			path.join(process.cwd(), "sources/**/*.js")
-// 		],
-// 		options: {
-// 			presets: ['babel-preset-es2015']
-// 		},
-// 		dest: "build/"
-// 	}
-// });
+babelEs6ForNodeComputedParams.src.documentationDescription = '[path.join(process.cwd(), "sources/**/*.js")]';
+
+_addCommonTask('babel', function(taskName, params) {
+	gulp.task(taskName, function (done) {
+		gulp.src(params.src)
+			.pipe(plumber())
+			.pipe(sourcemaps.init())
+			.pipe(babel(params.options))
+			.pipe(sourcemaps.write('.'))
+			.pipe(gulp.dest(params.dest))
+
+			.on('end', function() {
+				done();
+			});
+	});
+}, {
+	'default': 'es6-for-node',
+	'es6-for-node': {
+		src: babelEs6ForNodeComputedParams.src,
+		options: {
+			presets: ['babel-preset-es2015']
+		},
+		dest: "build/"
+	}
+});
 
 /*--------------------------------------------*/
+
+var readmeForNodePackageComputedParams = {
+	src: [
+		path.join(process.cwd(), "README.mustache")
+	],
+	view: require('./readme-for-node-package.view')
+};
+
+readmeForNodePackageComputedParams.src.documentationDescription = '[path.join(process.cwd(), "README.mustache")]';
+readmeForNodePackageComputedParams.view.documentationDescription = 'Some computed values: '+_.keys(readmeForNodePackageComputedParams.view);
 
 _addCommonTask('mustache', function(taskName, params) {
 	gulp.task(taskName, function(done) {
@@ -138,10 +153,8 @@ _addCommonTask('mustache', function(taskName, params) {
 	});	
 }, {
 	'readme-for-node-package' : {
-		src: [
-			path.join(process.cwd(), 'README.mustache')
-		],
-		view: require('./readme-for-node-package.view'),
+		src: readmeForNodePackageComputedParams.src,
+		view: readmeForNodePackageComputedParams.view,
 		destExt: '.md',
 		dest: './'
 	}
