@@ -2,9 +2,7 @@ var _ = require('lodash');
 var unindent = require('unindent');
 
 var task = require('./index');
-var apiTaskList = _.pick(task, function(value, key) {
-	return !_.contains(['build', 'watch', 'default'], key);
-});
+var apiTaskList = _.omit(task, ['build', 'watch', 'default']);
 
 var extractFunctionBody = function(func) {
 	var entire = func.toString();
@@ -23,9 +21,7 @@ _.forEach(apiTaskList, function(method, methodName) {
 	apiBody.push('```\n');
 	apiBody.push("Available presets\n");
 
-	_.forEach(_.pick(taskDescriptor.presets, function(preset, presetName) {
-		return presetName !== 'default';
-	}), function(preset, presetName) {
+	_.forEach(_.omit(taskDescriptor.presets, 'default'), function(preset, presetName) {
 		apiBody.push('- '+presetName+(taskDescriptor.presets.default === presetName ? " (default)" : "")+'\n');
 		apiBody.push('\tparam|type|description or default value');
 		apiBody.push('\t--------|--------|--------');
