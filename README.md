@@ -1,7 +1,7 @@
 @alexistessier/gulp-workflow-common-task
 ================
 
-[![version](https://img.shields.io/badge/version-2.1.4-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
+[![version](https://img.shields.io/badge/version-2.2.0-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
 [![npm version](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task.svg)](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task)
 
 [![Dependencies Status](https://david-dm.org/AlexisTessier/gulp-workflow-common-task.svg)](https://david-dm.org/AlexisTessier/gulp-workflow-common-task)
@@ -52,6 +52,7 @@ Common tasks list
 -----------------
 
 - [babel](#taskbabel)
+- [module-build](#taskmodule-build)
 - [mustache](#taskmustache)
 
 #####task.babel
@@ -80,6 +81,64 @@ Available presets
 	--------|--------|--------
 	src|object|[path.join(process.cwd(), "sources/**/*.js")]
 	options|object|{"presets":["babel-preset-es2015"]}
+	dest|string|"build/"
+
+
+
+#####task.module-build
+```javascript
+
+for(var paramName in params){
+	var param = params[paramName];
+	if(_.isObject(param) && param.__is_gulp_workflow_common_task_computed_parameters === true){
+		params[paramName] = param.value;
+	}
+}
+params.options.flow.declarations = params.typesDeclarationsPath;
+
+gulp.task('module-build', function (done) {
+	gulp.src(params.src)
+		.pipe(plumber())
+		.pipe(flow(params.options.flow))
+		.on('end', function() {
+			var stream = rollup({
+		    	entry: params.entry,
+		    	plugins: [ rollupFlow(params.options.flow) ],
+		    	sourceMap: true
+			})
+			.pipe(source(path.basename(params.entry), path.dirname(params.entry)))
+			.pipe(buffer())
+			.pipe(plumber())
+			.pipe(sourcemaps.init({loadMaps: true}))
+			.pipe(babel(params.options.babel))
+
+			if(params.uglify === true){
+				stream = stream.pipe(uglify(params.options.uglify));
+			}
+			
+			stream.pipe(rename(params.outputName))
+			.pipe(sourcemaps.write('.'))
+			.pipe(gulp.dest(params.dest))
+			.on('end', function() {
+				done();
+			});
+		});
+});
+
+```
+
+Available presets
+
+- flowtype-jsdoc3-rollup-es6-uglify (default)
+
+	param|type|description or default value
+	--------|--------|--------
+	entry|object|path.join(process.cwd(), "sources/index.js")
+	src|object|[path.join(process.cwd(), "sources/**/*.js")]
+	typesDeclarationsPath|object|path.join(process.cwd(), "sources/types")
+	outputName|string|"bundle.js"
+	uglify|boolean|true
+	options|object|{"uglify":{},"flow":{"all":false,"weak":false,"killFlow":false,"beep":true,"abort":false},"babel":{"presets":["es2015"]}}
 	dest|string|"build/"
 
 

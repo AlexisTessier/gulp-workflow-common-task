@@ -11,10 +11,17 @@ var gulp = require('gulp');
 var watch = require('gulp-watch');
 var plumber = require('gulp-plumber');
 var babel = require('gulp-babel');
+var rollup = require('rollup-stream');
+var rename = require('gulp-rename');
+var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var flow = require('gulp-flowtype');
 var batch = require('gulp-batch');
 var mustache = require('gulp-mustache');
 var rename = require("gulp-rename");
 var sourcemaps = require('gulp-sourcemaps');
+var rollupFlow = require('rollup-plugin-flow');
+var uglify = require('gulp-uglify');
 
 var taskList = {};
 var buildTaskList = [];
@@ -99,7 +106,7 @@ var babelEs6ForNodeComputedParams = {
 	]
 };
 
-babelEs6ForNodeComputedParams.src.documentationDescription = '[path.join(process.cwd(), "sources/**/*.js")]';
+babelEs6ForNodeComputedParams.src.documentationDescription = '[path.join(process.cwd(), "sources/\*\*/\*.js")]';
 
 _addCommonTask('babel', function(taskName, params) {
 	gulp.task(taskName, function (done) {
@@ -120,6 +127,90 @@ _addCommonTask('babel', function(taskName, params) {
 		src: babelEs6ForNodeComputedParams.src,
 		options: {
 			presets: ['babel-preset-es2015']
+		},
+		dest: "build/"
+	}
+});
+
+/*--------------------------------------------*/
+
+var moduleBuildFlowtypeJsdoc3RollupEs6UglifyComputedParams = {
+	src: {
+		documentationDescription: '[path.join(process.cwd(), "sources/\*\*/\*.js")]',
+		value: [
+			path.join(process.cwd(), "sources/**/*.js")
+		],
+		__is_gulp_workflow_common_task_computed_parameters: true
+	},
+	typesDeclarationsPath: {
+		documentationDescription: 'path.join(process.cwd(), "sources/types")',
+		value: path.join(process.cwd(), "sources/types"),
+		__is_gulp_workflow_common_task_computed_parameters: true
+	},
+	entry: {
+		documentationDescription: 'path.join(process.cwd(), "sources/index.js")',
+		value: path.join(process.cwd(), "sources/index.js"),
+		__is_gulp_workflow_common_task_computed_parameters: true
+	}
+};
+
+_addCommonTask('module-build', function(taskName, params) {
+	for(var paramName in params){
+		var param = params[paramName];
+		if(_.isObject(param) && param.__is_gulp_workflow_common_task_computed_parameters === true){
+			params[paramName] = param.value;
+		}
+	}
+	params.options.flow.declarations = params.typesDeclarationsPath;
+
+	gulp.task(taskName, function (done) {
+		gulp.src(params.src)
+			.pipe(plumber())
+			.pipe(flow(params.options.flow))
+			.on('end', function() {
+				var stream = rollup({
+			    	entry: params.entry,
+			    	plugins: [ rollupFlow(params.options.flow) ],
+			    	sourceMap: true
+				})
+				.pipe(source(path.basename(params.entry), path.dirname(params.entry)))
+				.pipe(buffer())
+				.pipe(plumber())
+				.pipe(sourcemaps.init({loadMaps: true}))
+				.pipe(babel(params.options.babel))
+
+				if(params.uglify === true){
+					stream = stream.pipe(uglify(params.options.uglify));
+				}
+				
+				stream.pipe(rename(params.outputName))
+				.pipe(sourcemaps.write('.'))
+				.pipe(gulp.dest(params.dest))
+				.on('end', function() {
+					done();
+				});
+			});
+	});
+}, {
+	'default': 'flowtype-jsdoc3-rollup-es6-uglify',
+	'flowtype-jsdoc3-rollup-es6-uglify': {
+		entry: moduleBuildFlowtypeJsdoc3RollupEs6UglifyComputedParams.entry,
+		src: moduleBuildFlowtypeJsdoc3RollupEs6UglifyComputedParams.src,
+		typesDeclarationsPath: moduleBuildFlowtypeJsdoc3RollupEs6UglifyComputedParams.typesDeclarationsPath,
+		outputName:'bundle.js',
+		uglify: true,
+		options: {
+			uglify: {},
+			flow: {
+				all: false,
+				weak: false,
+				killFlow: false,
+				beep: true,
+				abort: false
+			},
+			babel: {
+				presets: ['es2015']
+			}
 		},
 		dest: "build/"
 	}
