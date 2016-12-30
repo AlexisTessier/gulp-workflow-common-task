@@ -52,6 +52,7 @@ var commonTask = {
 var presetCustomKeyCounter = 1;
 
 function _addCommonTask(name, taskSetter, presets){
+	name = _.camelCase(name);
 	assert(typeof presets === 'object');
 
 	var presetsDefault = presets.default || null;
