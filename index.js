@@ -173,7 +173,7 @@ _addCommonTask('module-build', function(taskName, params) {
 	params.options.rollup.plugins.unshift(rollupFlow(params.options.flow));
 
 	gulp.task(taskName, function (done) {
-		gulp.src(params.src)
+		gulp.src(params.entry)
 			.pipe(plumber())
 			.pipe(flow(params.options.flow))
 			.on('end', function() {
