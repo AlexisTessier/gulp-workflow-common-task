@@ -166,20 +166,17 @@ _addCommonTask('module-build', function(taskName, params) {
 		}
 	}
 	params.options.flow.declarations = params.typesDeclarationsPath;
+	
+	params.options.rollup.plugins = _.isArray(params.options.rollup.plugins) ? params.options.rollup.plugins : [];
+	params.options.rollup.plugins.unshift(commonjs(params.options.commonjs));
+	params.options.rollup.plugins.unshift(nodeResolve(params.options.nodeResolve));
+	params.options.rollup.plugins.unshift(rollupFlow(params.options.flow));
 
 	gulp.task(taskName, function (done) {
 		gulp.src(params.src)
 			.pipe(plumber())
 			.pipe(flow(params.options.flow))
 			.on('end', function() {
-
-				params.options.rollup.plugins = _.isArray(params.options.rollup.plugins) ? params.options.rollup.plugins : [];
-
-				params.options.rollup.plugins.unshift(commonjs(params.options.commonjs));
-
-				params.options.rollup.plugins.unshift(nodeResolve(params.options.nodeResolve));
-
-				params.options.rollup.plugins.unshift(rollupFlow(params.options.flow));
 
 				var stream = rollup(_.assign({}, {
 			    	entry: params.entry,
