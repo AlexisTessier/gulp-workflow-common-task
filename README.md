@@ -1,7 +1,7 @@
 @alexistessier/gulp-workflow-common-task
 ================
 
-[![version](https://img.shields.io/badge/version-2.3.0-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
+[![version](https://img.shields.io/badge/version-2.3.1-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
 [![npm version](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task.svg)](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task)
 
 [![Dependencies Status](https://david-dm.org/AlexisTessier/gulp-workflow-common-task.svg)](https://david-dm.org/AlexisTessier/gulp-workflow-common-task)
@@ -104,6 +104,8 @@ gulp.task('moduleBuild', function (done) {
 
 			params.options.rollup.plugins = _.isArray(params.options.rollup.plugins) ? params.options.rollup.plugins : [];
 
+			params.options.rollup.plugins.unshift(commonjs(params.options.commonjs));
+
 			params.options.rollup.plugins.unshift(nodeResolve(params.options.nodeResolve));
 
 			params.options.rollup.plugins.unshift(rollupFlow(params.options.flow));
@@ -144,7 +146,7 @@ Available presets
 	typesDeclarationsPath|object|path.join(process.cwd(), "sources/types")
 	outputName|string|"bundle.js"
 	uglify|boolean|true
-	options|object|{"rollup":{"format":"umd","moduleId":"gulp-workflow-common-task","moduleName":"GulpWorkflowCommonTask","indent":false},"nodeResolve":{"module":true,"jsnext":true,"main":true,"skip":[],"extensions":[".js",".json"],"preferBuiltins":true,"browser":true},"uglify":{},"flow":{"all":false,"weak":false,"killFlow":false,"beep":true,"abort":false},"babel":{"presets":["es2015"]}}
+	options|object|{"commonjs":{"include":"node_modules/**","exclude":[],"extensions":[".js"],"namedExports":{}},"rollup":{"format":"umd","moduleId":"gulp-workflow-common-task","moduleName":"GulpWorkflowCommonTask","indent":false},"nodeResolve":{"module":true,"jsnext":true,"main":true,"skip":[],"extensions":[".js",".json"],"preferBuiltins":true,"browser":true},"uglify":{},"flow":{"all":false,"weak":false,"killFlow":false,"beep":true,"abort":false},"babel":{"presets":["es2015"]}}
 	dest|string|"build/"
 
 

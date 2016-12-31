@@ -23,6 +23,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var rollupFlow = require('rollup-plugin-flow');
 var uglify = require('gulp-uglify');
 var nodeResolve = require('rollup-plugin-node-resolve');
+var commonjs = require('rollup-plugin-commonjs');
 
 var taskList = {};
 var buildTaskList = [];
@@ -174,6 +175,8 @@ _addCommonTask('module-build', function(taskName, params) {
 
 				params.options.rollup.plugins = _.isArray(params.options.rollup.plugins) ? params.options.rollup.plugins : [];
 
+				params.options.rollup.plugins.unshift(commonjs(params.options.commonjs));
+
 				params.options.rollup.plugins.unshift(nodeResolve(params.options.nodeResolve));
 
 				params.options.rollup.plugins.unshift(rollupFlow(params.options.flow));
@@ -209,6 +212,12 @@ _addCommonTask('module-build', function(taskName, params) {
 		outputName:'bundle.js',
 		uglify: true,
 		options: {
+			commonjs: {
+				include: 'node_modules/**',
+				exclude: [],
+				extensions: ['.js'],
+				namedExports: {}
+			},
 			rollup : {
 				format: 'umd',
 				moduleId: moduleId,
