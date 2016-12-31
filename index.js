@@ -147,7 +147,7 @@ var moduleBuildFlowtypeJsdoc3RollupEs6UglifyComputedParams = {
 	},
 	typesDeclarationsPath: {
 		documentationDescription: 'path.join(process.cwd(), "sources/types")',
-		value: path.join(process.cwd(), "sources/types"),
+		value: path.join(process.cwd(), "sources/types-declarations"),
 		__is_gulp_workflow_common_task_computed_parameters: true
 	},
 	entry: {
