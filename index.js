@@ -63,41 +63,41 @@ function _addCommonTask(name, taskSetter, presets){
 	);
 	assert(typeof defaultParams === 'object' || typeof defaultParams === 'null');
 
-	commonTask[name] = function(preset, paramsOverride, getDescriptor) {
+	commonTask[name] = function(preset, paramsOverride, disable) {
 		var _defaultParams = typeof defaultParams === 'null' ? null : _.cloneDeep(defaultParams);
 		var presetKey = typeof preset === 'object' ? 'custom-preset-'+(presetCustomKeyCounter++) : (preset || 'default');
 		var _preset = typeof preset === 'object' ? preset : _.cloneDeep(presets[presetKey]);
 
-		if(!getDescriptor){
-			var taskName = name+'-'+presetKey;
-			var paramsOverride = typeof paramsOverride === 'object' ? paramsOverride : {};
+		var taskName = name+'-'+presetKey;
+		var paramsOverride = typeof paramsOverride === 'object' ? paramsOverride : {};
 
-			var flatten_params = flatten(_defaultParams || {});
-			var flatten_preset = flatten(_preset || {});
-			var flatten_override = flatten(paramsOverride);
+		var flatten_params = flatten(_defaultParams || {});
+		var flatten_preset = flatten(_preset || {});
+		var flatten_override = flatten(paramsOverride);
 
-			for(var key in flatten_preset){
-				flatten_params[key] = flatten_preset[key];
-			}
+		for(var key in flatten_preset){
+			flatten_params[key] = flatten_preset[key];
+		}
 
-			for(var key in flatten_override){
-				flatten_params[key] = flatten_override[key];
-			}
+		for(var key in flatten_override){
+			flatten_params[key] = flatten_override[key];
+		}
 
-			var params = unflatten(flatten_params);
+		var params = unflatten(flatten_params);
 
+		if(!disable){
 			taskList[taskName] = {
 				params: params
 			};
 			taskSetter(taskName, params);
 		}
-		else{
-			return {
-				name: name,
-				task: taskSetter,
-				presets: presets
-			};
-		}	
+
+		return {
+			name: name,
+			task: taskSetter,
+			presets: presets,
+			params: params
+		};	
 	};
 }
 

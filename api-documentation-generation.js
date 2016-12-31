@@ -13,7 +13,7 @@ var apiHeader = [], apiBody = [];
 _.forEach(apiTaskList, function(method, methodName) {
 	apiHeader.push('- ['+methodName+'](#task'+methodName.toLowerCase()+')');
 
-	var taskDescriptor = task[methodName](false, false, /*getDescriptor*/ true);
+	var taskDescriptor = task[methodName](false, false, /*disable*/ true);
 
 	apiBody.push('#####task.'+methodName);
 	apiBody.push('```javascript');
