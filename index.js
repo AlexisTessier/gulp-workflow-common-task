@@ -198,7 +198,8 @@ _addCommonTask('module-build', function(taskName, params) {
 				.on('end', function() {
 					done();
 				});
-			});
+			})
+			.on('error', done)
 	});
 }, {
 	'default': 'flowtype-jsdoc3-rollup-es6-uglify',
