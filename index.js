@@ -22,6 +22,7 @@ var rename = require("gulp-rename");
 var sourcemaps = require('gulp-sourcemaps');
 var rollupFlow = require('rollup-plugin-flow');
 var uglify = require('gulp-uglify');
+var nodeResolve = require('rollup-plugin-node-resolve');
 
 var taskList = {};
 var buildTaskList = [];
@@ -155,6 +156,7 @@ var moduleBuildFlowtypeJsdoc3RollupEs6UglifyComputedParams = {
 	}
 };
 
+var moduleId = require('./cwd-package-computed-data').package.rawName;
 _addCommonTask('module-build', function(taskName, params) {
 	for(var paramName in params){
 		var param = params[paramName];
@@ -169,11 +171,17 @@ _addCommonTask('module-build', function(taskName, params) {
 			.pipe(plumber())
 			.pipe(flow(params.options.flow))
 			.on('end', function() {
-				var stream = rollup({
+
+				params.options.rollup.plugins = _.isArray(params.options.rollup.plugins) ? params.options.rollup.plugins : [];
+
+				params.options.rollup.plugins.unshift(nodeResolve(params.options.nodeResolve));
+
+				params.options.rollup.plugins.unshift(rollupFlow(params.options.flow));
+
+				var stream = rollup(_.assign({}, {
 			    	entry: params.entry,
-			    	plugins: [ rollupFlow(params.options.flow) ],
 			    	sourceMap: true
-				})
+				}, params.options.rollup))
 				.pipe(source(path.basename(params.entry), path.dirname(params.entry)))
 				.pipe(buffer())
 				.pipe(plumber())
@@ -201,6 +209,21 @@ _addCommonTask('module-build', function(taskName, params) {
 		outputName:'bundle.js',
 		uglify: true,
 		options: {
+			rollup : {
+				format: 'umd',
+				moduleId: moduleId,
+				moduleName: _.upperFirst(_.camelCase(moduleId)),
+				indent: false
+			},
+			nodeResolve : {
+				module: true,
+				jsnext: true,
+				main: true,
+				skip: [],
+				extensions: [ '.js', '.json' ],
+				preferBuiltins: true,
+				browser: true
+			},
 			uglify: {},
 			flow: {
 				all: false,
@@ -223,7 +246,7 @@ var readmeForNodePackageComputedParams = {
 	src: [
 		path.join(process.cwd(), "README.mustache")
 	],
-	view: require('./readme-for-node-package.view')
+	view: require('./cwd-package-computed-data')
 };
 
 readmeForNodePackageComputedParams.src.documentationDescription = '[path.join(process.cwd(), "README.mustache")]';
