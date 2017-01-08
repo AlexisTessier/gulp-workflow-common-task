@@ -6,7 +6,11 @@ var apiTaskList = _.omit(task, ['build', 'watch', 'default']);
 
 var extractFunctionBody = function(func) {
 	var entire = func.toString();
-	return unindent(unindent(entire.substring(entire.indexOf("{") + 1, entire.lastIndexOf("}"))));
+	while(entire.indexOf('prepareParams(params);') >= 0){
+		entire = entire.replace('prepareParams(params);', '');
+	}
+
+	return _.trim(unindent(unindent(entire.substring(entire.indexOf("{") + 1, entire.lastIndexOf("}")))));
 };
 
 var apiHeader = [], apiBody = [];

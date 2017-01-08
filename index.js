@@ -3,6 +3,8 @@
 var assert = require('assert');
 var path = require('path');
 
+var cwdPackageComputedData = require('./cwd-package-computed-data');
+
 var _ = require('lodash');
 var flatten = require('flat');
 var unflatten = flatten.unflatten;
@@ -15,7 +17,6 @@ var rollup = require('rollup-stream');
 var rename = require('gulp-rename');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
-var flow = require('gulp-flowtype');
 var batch = require('gulp-batch');
 var mustache = require('gulp-mustache');
 var rename = require("gulp-rename");
@@ -24,6 +25,7 @@ var rollupFlow = require('rollup-plugin-flow');
 var uglify = require('gulp-uglify');
 var nodeResolve = require('rollup-plugin-node-resolve');
 var commonjs = require('rollup-plugin-commonjs');
+var jsdoc = require('gulp-jsdoc3');
 
 var taskList = {};
 var buildTaskList = [];
@@ -101,6 +103,15 @@ function _addCommonTask(name, taskSetter, presets){
 	};
 }
 
+function prepareParams(params) {
+	for(var paramName in params){
+		var param = params[paramName];
+		if(_.isObject(param)){
+			(param.__is_gulp_workflow_common_task_computed_parameters === true) ? params[paramName] = param.value : prepareParams(param);
+		}
+	}
+}
+
 /*-------------------------------------------*/
 
 var babelEs6ForNodeComputedParams = {
@@ -137,17 +148,12 @@ _addCommonTask('babel', function(taskName, params) {
 
 /*--------------------------------------------*/
 
-var moduleBuildFlowtypeJsdoc3RollupEs6UglifyComputedParams = {
+var moduleBuildFlowtypeRollupEs6UglifyComputedParams = {
 	src: {
-		documentationDescription: '[path.join(process.cwd(), "sources/\*\*/\*.js")]',
+		documentationDescription: '[path.join(process.cwd(), "sources/**/*.js")]',
 		value: [
 			path.join(process.cwd(), "sources/**/*.js")
 		],
-		__is_gulp_workflow_common_task_computed_parameters: true
-	},
-	typesDeclarationsPath: {
-		documentationDescription: 'path.join(process.cwd(), "sources/types")',
-		value: path.join(process.cwd(), "sources/types-declarations"),
 		__is_gulp_workflow_common_task_computed_parameters: true
 	},
 	entry: {
@@ -157,15 +163,9 @@ var moduleBuildFlowtypeJsdoc3RollupEs6UglifyComputedParams = {
 	}
 };
 
-var moduleId = require('./cwd-package-computed-data').package.rawName;
+var moduleId = cwdPackageComputedData.package.rawName;
 _addCommonTask('module-build', function(taskName, params) {
-	for(var paramName in params){
-		var param = params[paramName];
-		if(_.isObject(param) && param.__is_gulp_workflow_common_task_computed_parameters === true){
-			params[paramName] = param.value;
-		}
-	}
-	params.options.flow.declarations = params.typesDeclarationsPath;
+	prepareParams(params);
 	
 	params.options.rollup.plugins = _.isArray(params.options.rollup.plugins) ? params.options.rollup.plugins : [];
 	params.options.rollup.plugins.unshift(commonjs(params.options.commonjs));
@@ -173,40 +173,32 @@ _addCommonTask('module-build', function(taskName, params) {
 	params.options.rollup.plugins.unshift(rollupFlow(params.options.flow));
 
 	gulp.task(taskName, function (done) {
-		gulp.src(params.entry)
+		var stream = rollup(_.assign({}, {
+				entry: params.entry,
+				sourceMap: true
+			}, params.options.rollup))
+			.pipe(source(path.basename(params.entry), path.dirname(params.entry)))
+			.pipe(buffer())
 			.pipe(plumber())
-			.pipe(flow(params.options.flow))
+			.pipe(sourcemaps.init({loadMaps: true}))
+			.pipe(babel(params.options.babel))
+
+			if(params.uglify === true){
+				stream = stream.pipe(uglify(params.options.uglify));
+			}
+			
+			stream.pipe(rename(params.outputName))
+			.pipe(sourcemaps.write('.'))
+			.pipe(gulp.dest(params.dest))
 			.on('end', function() {
-
-				var stream = rollup(_.assign({}, {
-			    	entry: params.entry,
-			    	sourceMap: true
-				}, params.options.rollup))
-				.pipe(source(path.basename(params.entry), path.dirname(params.entry)))
-				.pipe(buffer())
-				.pipe(plumber())
-				.pipe(sourcemaps.init({loadMaps: true}))
-				.pipe(babel(params.options.babel))
-
-				if(params.uglify === true){
-					stream = stream.pipe(uglify(params.options.uglify));
-				}
-				
-				stream.pipe(rename(params.outputName))
-				.pipe(sourcemaps.write('.'))
-				.pipe(gulp.dest(params.dest))
-				.on('end', function() {
-					done();
-				});
-			})
-			.on('error', done)
+				done();
+			});
 	});
 }, {
-	'default': 'flowtype-jsdoc3-rollup-es6-uglify',
-	'flowtype-jsdoc3-rollup-es6-uglify': {
-		entry: moduleBuildFlowtypeJsdoc3RollupEs6UglifyComputedParams.entry,
-		src: moduleBuildFlowtypeJsdoc3RollupEs6UglifyComputedParams.src,
-		typesDeclarationsPath: moduleBuildFlowtypeJsdoc3RollupEs6UglifyComputedParams.typesDeclarationsPath,
+	'default': 'flowtype-rollup-es6-uglify',
+	'flowtype-rollup-es6-uglify': {
+		entry: moduleBuildFlowtypeRollupEs6UglifyComputedParams.entry,
+		src: moduleBuildFlowtypeRollupEs6UglifyComputedParams.src,
 		outputName:'bundle.js',
 		uglify: true,
 		options: {
@@ -231,14 +223,11 @@ _addCommonTask('module-build', function(taskName, params) {
 				preferBuiltins: true,
 				browser: true
 			},
-			uglify: {},
 			flow: {
 				all: false,
-				weak: false,
-				killFlow: false,
-				beep: true,
-				abort: false
+				pretty: false
 			},
+			uglify: {},
 			babel: {
 				presets: ['es2015']
 			}
@@ -253,7 +242,7 @@ var readmeForNodePackageComputedParams = {
 	src: [
 		path.join(process.cwd(), "README.mustache")
 	],
-	view: require('./cwd-package-computed-data')
+	view: cwdPackageComputedData
 };
 
 readmeForNodePackageComputedParams.src.documentationDescription = '[path.join(process.cwd(), "README.mustache")]';
@@ -279,6 +268,64 @@ _addCommonTask('mustache', function(taskName, params) {
 		view: readmeForNodePackageComputedParams.view,
 		destExt: '.md',
 		dest: './'
+	}
+});
+
+/*--------------------------------------------*/
+
+var documentationJsDoc3ComputedParams = {
+	src: [
+		path.join(process.cwd(), "README.md"),
+		path.join(process.cwd(), "sources/**/*.js")
+	],
+	dest: {
+		documentationDescription: 'path.join(process.cwd(), "build/documentation")',
+		value: path.join(process.cwd(), "build/documentation"),
+		__is_gulp_workflow_common_task_computed_parameters: true
+	}
+};
+
+documentationJsDoc3ComputedParams.src.documentationDescription = '[path.join(process.cwd(), "README.md"), path.join(process.cwd(), "sources/\*\*/\*.js")]';
+
+/**
+ * @function task.documentation
+ * @description Generate a documentation
+ */
+_addCommonTask('documentation', function(taskName, params) {
+	prepareParams(params);
+
+	gulp.task(taskName, function(done) {
+		gulp.src(params.src, {read: false})
+			.pipe(plumber())
+			.pipe(jsdoc(params.config, done))
+	});	
+}, {
+	'default': 'jsdoc3',
+	'jsdoc3': {
+		src: documentationJsDoc3ComputedParams.src,
+		config: {
+			tags: {
+				allowUnknownTags: true
+			},
+			opts: {
+				destination: documentationJsDoc3ComputedParams.dest
+			},
+			plugins: [
+				"plugins/markdown"
+			],
+			templates: {
+				cleverLinks: false,
+				monospaceLinks: false,
+				default: {
+					outputSourceFiles: true
+				},
+				path: "ink-docstrap",
+				theme: "cerulean",
+				navType: "vertical",
+				linenums: true,
+				dateFormat: "MMMM Do YYYY, h:mm:ss a"
+			}
+		}
 	}
 });
 

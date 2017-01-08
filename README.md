@@ -1,7 +1,7 @@
 @alexistessier/gulp-workflow-common-task
 ================
 
-[![version](https://img.shields.io/badge/version-2.6.0-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
+[![version](https://img.shields.io/badge/version-2.7.0-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
 [![npm version](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task.svg)](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task)
 
 [![Dependencies Status](https://david-dm.org/AlexisTessier/gulp-workflow-common-task.svg)](https://david-dm.org/AlexisTessier/gulp-workflow-common-task)
@@ -54,10 +54,10 @@ Common tasks list
 - [babel](#taskbabel)
 - [moduleBuild](#taskmodulebuild)
 - [mustache](#taskmustache)
+- [documentation](#taskdocumentation)
 
 #####task.babel
 ```javascript
-
 gulp.task('babel', function (done) {
 	gulp.src(params.src)
 		.pipe(plumber())
@@ -70,7 +70,6 @@ gulp.task('babel', function (done) {
 			done();
 		});
 });
-
 ```
 
 Available presets
@@ -87,71 +86,52 @@ Available presets
 
 #####task.moduleBuild
 ```javascript
-
-for(var paramName in params){
-	var param = params[paramName];
-	if(_.isObject(param) && param.__is_gulp_workflow_common_task_computed_parameters === true){
-		params[paramName] = param.value;
-	}
-}
-params.options.flow.declarations = params.typesDeclarationsPath;
-
 params.options.rollup.plugins = _.isArray(params.options.rollup.plugins) ? params.options.rollup.plugins : [];
 params.options.rollup.plugins.unshift(commonjs(params.options.commonjs));
 params.options.rollup.plugins.unshift(nodeResolve(params.options.nodeResolve));
 params.options.rollup.plugins.unshift(rollupFlow(params.options.flow));
 
 gulp.task('moduleBuild', function (done) {
-	gulp.src(params.entry)
+	var stream = rollup(_.assign({}, {
+			entry: params.entry,
+			sourceMap: true
+		}, params.options.rollup))
+		.pipe(source(path.basename(params.entry), path.dirname(params.entry)))
+		.pipe(buffer())
 		.pipe(plumber())
-		.pipe(flow(params.options.flow))
+		.pipe(sourcemaps.init({loadMaps: true}))
+		.pipe(babel(params.options.babel))
+
+		if(params.uglify === true){
+			stream = stream.pipe(uglify(params.options.uglify));
+		}
+		
+		stream.pipe(rename(params.outputName))
+		.pipe(sourcemaps.write('.'))
+		.pipe(gulp.dest(params.dest))
 		.on('end', function() {
-
-			var stream = rollup(_.assign({}, {
-		    	entry: params.entry,
-		    	sourceMap: true
-			}, params.options.rollup))
-			.pipe(source(path.basename(params.entry), path.dirname(params.entry)))
-			.pipe(buffer())
-			.pipe(plumber())
-			.pipe(sourcemaps.init({loadMaps: true}))
-			.pipe(babel(params.options.babel))
-
-			if(params.uglify === true){
-				stream = stream.pipe(uglify(params.options.uglify));
-			}
-			
-			stream.pipe(rename(params.outputName))
-			.pipe(sourcemaps.write('.'))
-			.pipe(gulp.dest(params.dest))
-			.on('end', function() {
-				done();
-			});
-		})
-		.on('error', done)
+			done();
+		});
 });
-
 ```
 
 Available presets
 
-- flowtype-jsdoc3-rollup-es6-uglify (default)
+- flowtype-rollup-es6-uglify (default)
 
 	param|type|description or default value
 	--------|--------|--------
 	entry|object|path.join(process.cwd(), "sources/index.js")
 	src|object|[path.join(process.cwd(), "sources/**/*.js")]
-	typesDeclarationsPath|object|path.join(process.cwd(), "sources/types")
 	outputName|string|"bundle.js"
 	uglify|boolean|true
-	options|object|{"commonjs":{"include":"node_modules/**","exclude":[],"extensions":[".js"],"namedExports":{}},"rollup":{"format":"umd","moduleId":"gulp-workflow-common-task","moduleName":"GulpWorkflowCommonTask","indent":false},"nodeResolve":{"module":true,"jsnext":true,"main":true,"skip":[],"extensions":[".js",".json"],"preferBuiltins":true,"browser":true},"uglify":{},"flow":{"all":false,"weak":false,"killFlow":false,"beep":true,"abort":false},"babel":{"presets":["es2015"]}}
+	options|object|{"commonjs":{"include":"node_modules/**","exclude":[],"extensions":[".js"],"namedExports":{}},"rollup":{"format":"umd","moduleId":"gulp-workflow-common-task","moduleName":"GulpWorkflowCommonTask","indent":false},"nodeResolve":{"module":true,"jsnext":true,"main":true,"skip":[],"extensions":[".js",".json"],"preferBuiltins":true,"browser":true},"flow":{"all":false,"pretty":false},"uglify":{},"babel":{"presets":["es2015"]}}
 	dest|string|"build/"
 
 
 
 #####task.mustache
 ```javascript
-
 gulp.task('mustache', function(done) {
 	gulp.src(params.src)
 		.pipe(plumber())
@@ -164,8 +144,7 @@ gulp.task('mustache', function(done) {
 		.on('end', function() {
 			done();
 		});
-});	
-
+});
 ```
 
 Available presets
@@ -178,5 +157,25 @@ Available presets
 	view|object|Some computed values: package,furyiopath,username
 	destExt|string|".md"
 	dest|string|"./"
+
+
+
+#####task.documentation
+```javascript
+gulp.task('documentation', function(done) {
+	gulp.src(params.src, {read: false})
+		.pipe(plumber())
+		.pipe(jsdoc(params.config, done))
+});
+```
+
+Available presets
+
+- jsdoc3 (default)
+
+	param|type|description or default value
+	--------|--------|--------
+	src|object|[path.join(process.cwd(), "README.md"), path.join(process.cwd(), "sources/**/*.js")]
+	config|object|{"tags":{"allowUnknownTags":true},"opts":{"destination":{"documentationDescription":"path.join(process.cwd(), \"build/documentation\")","value":"C:\\Users\\Phend\\Desktop\\dev\\gulp-workflow-common-task\\build\\documentation","__is_gulp_workflow_common_task_computed_parameters":true}},"plugins":["plugins/markdown"],"templates":{"cleverLinks":false,"monospaceLinks":false,"default":{"outputSourceFiles":true},"path":"ink-docstrap","theme":"cerulean","navType":"vertical","linenums":true,"dateFormat":"MMMM Do YYYY, h:mm:ss a"}}
 
 
