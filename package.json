@@ -1,6 +1,6 @@
 {
   "name": "@alexistessier/gulp-workflow-common-task",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "description": "A set of common gulp task I use",
   "main": "index.js",
   "scripts": {
@@ -29,7 +29,7 @@
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-batch": "^1.0.5",
-    "gulp-jsdoc3": "^1.0.1",
+    "gulp-documentation": "^3.1.0",
     "gulp-mustache": "^2.3.0",
     "gulp-plumber": "^1.1.0",
     "gulp-rename": "^1.2.2",

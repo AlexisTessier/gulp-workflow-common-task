@@ -25,7 +25,7 @@ var rollupFlow = require('rollup-plugin-flow');
 var uglify = require('gulp-uglify');
 var nodeResolve = require('rollup-plugin-node-resolve');
 var commonjs = require('rollup-plugin-commonjs');
-var jsdoc = require('gulp-jsdoc3');
+var gulpDocumentation = require('gulp-documentation');
 
 var taskList = {};
 var buildTaskList = [];
@@ -273,19 +273,13 @@ _addCommonTask('mustache', function(taskName, params) {
 
 /*--------------------------------------------*/
 
-var documentationJsDoc3ComputedParams = {
+var documentationHtmlComputedParams = {
 	src: [
-		path.join(process.cwd(), "README.md"),
 		path.join(process.cwd(), "sources/**/*.js")
-	],
-	dest: {
-		documentationDescription: 'path.join(process.cwd(), "build/documentation")',
-		value: path.join(process.cwd(), "build/documentation"),
-		__is_gulp_workflow_common_task_computed_parameters: true
-	}
+	]
 };
 
-documentationJsDoc3ComputedParams.src.documentationDescription = '[path.join(process.cwd(), "README.md"), path.join(process.cwd(), "sources/\*\*/\*.js")]';
+documentationHtmlComputedParams.src.documentationDescription = '[path.join(process.cwd(), "sources/\*\*/\*.js")]';
 
 /**
  * @function task.documentation
@@ -297,35 +291,22 @@ _addCommonTask('documentation', function(taskName, params) {
 	gulp.task(taskName, function(done) {
 		gulp.src(params.src, {read: false})
 			.pipe(plumber())
-			.pipe(jsdoc(params.config, done))
+			.pipe(gulpDocumentation('html', params.options, params.information))
+			.pipe(gulp.dest(params.dest))
+			.on('end', done)
 	});	
 }, {
-	'default': 'jsdoc3',
-	'jsdoc3': {
-		src: documentationJsDoc3ComputedParams.src,
-		config: {
-			tags: {
-				allowUnknownTags: true
-			},
-			opts: {
-				destination: documentationJsDoc3ComputedParams.dest
-			},
-			plugins: [
-				"plugins/markdown"
-			],
-			templates: {
-				cleverLinks: false,
-				monospaceLinks: false,
-				default: {
-					outputSourceFiles: true
-				},
-				path: "ink-docstrap",
-				theme: "cerulean",
-				navType: "vertical",
-				linenums: true,
-				dateFormat: "MMMM Do YYYY, h:mm:ss a"
-			}
-		}
+	'default': 'html',
+	'html': {
+		src: documentationHtmlComputedParams.src,
+		options: {
+			polyglot: false
+		},
+		information: {
+			name: cwdPackageComputedData.package.rawName,
+			version: cwdPackageComputedData.package.version
+		},
+		dest: "documentation"
 	}
 });
 

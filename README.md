@@ -1,7 +1,7 @@
 @alexistessier/gulp-workflow-common-task
 ================
 
-[![version](https://img.shields.io/badge/version-2.7.0-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
+[![version](https://img.shields.io/badge/version-2.8.0-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
 [![npm version](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task.svg)](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task)
 
 [![Dependencies Status](https://david-dm.org/AlexisTessier/gulp-workflow-common-task.svg)](https://david-dm.org/AlexisTessier/gulp-workflow-common-task)
@@ -165,17 +165,21 @@ Available presets
 gulp.task('documentation', function(done) {
 	gulp.src(params.src, {read: false})
 		.pipe(plumber())
-		.pipe(jsdoc(params.config, done))
+		.pipe(gulpDocumentation('html', params.options, params.information))
+		.pipe(gulp.dest(params.dest))
+		.on('end', done)
 });
 ```
 
 Available presets
 
-- jsdoc3 (default)
+- html (default)
 
 	param|type|description or default value
 	--------|--------|--------
-	src|object|[path.join(process.cwd(), "README.md"), path.join(process.cwd(), "sources/**/*.js")]
-	config|object|{"tags":{"allowUnknownTags":true},"opts":{"destination":{"documentationDescription":"path.join(process.cwd(), \"build/documentation\")","value":"C:\\Users\\Phend\\Desktop\\dev\\gulp-workflow-common-task\\build\\documentation","__is_gulp_workflow_common_task_computed_parameters":true}},"plugins":["plugins/markdown"],"templates":{"cleverLinks":false,"monospaceLinks":false,"default":{"outputSourceFiles":true},"path":"ink-docstrap","theme":"cerulean","navType":"vertical","linenums":true,"dateFormat":"MMMM Do YYYY, h:mm:ss a"}}
+	src|object|[path.join(process.cwd(), "sources/**/*.js")]
+	options|object|{"polyglot":false}
+	information|object|{"name":"gulp-workflow-common-task","version":"2.8.0"}
+	dest|string|"documentation"
 
 
