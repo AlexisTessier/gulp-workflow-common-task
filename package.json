@@ -1,6 +1,6 @@
 {
   "name": "@alexistessier/gulp-workflow-common-task",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "description": "A set of common gulp task I use",
   "main": "index.js",
   "scripts": {
@@ -26,6 +26,7 @@
   "dependencies": {
     "babel-preset-es2015": "^6.18.0",
     "flat": "^2.0.1",
+    "flow-bin": "^0.37.4",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-batch": "^1.0.5",
