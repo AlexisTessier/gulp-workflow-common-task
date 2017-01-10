@@ -1,7 +1,7 @@
 @alexistessier/gulp-workflow-common-task
 ================
 
-[![version](https://img.shields.io/badge/version-2.8.0-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
+[![version](https://img.shields.io/badge/version-2.10.0-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
 [![npm version](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task.svg)](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task)
 
 [![Dependencies Status](https://david-dm.org/AlexisTessier/gulp-workflow-common-task.svg)](https://david-dm.org/AlexisTessier/gulp-workflow-common-task)
@@ -179,7 +179,7 @@ Available presets
 	--------|--------|--------
 	src|object|[path.join(process.cwd(), "sources/**/*.js")]
 	options|object|{"polyglot":false}
-	information|object|{"name":"gulp-workflow-common-task","version":"2.8.0"}
+	information|object|{"name":"gulp-workflow-common-task","version":"2.10.0"}
 	dest|string|"documentation"
 
 

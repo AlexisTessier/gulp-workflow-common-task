@@ -30,9 +30,6 @@ var gulpDocumentation = require('gulp-documentation');
 var taskList = {};
 var buildTaskList = [];
 
-var execFile = require('child_process').execFile;
-var flow = require('flow-bin');
-
 var commonTask = {
 	build: function(params) {
 		var params = params || {};
@@ -174,10 +171,6 @@ _addCommonTask('module-build', function(taskName, params) {
 	params.options.rollup.plugins.unshift(commonjs(params.options.commonjs));
 	params.options.rollup.plugins.unshift(nodeResolve(params.options.nodeResolve));
 	params.options.rollup.plugins.unshift(rollupFlow(params.options.flow));
-
-	execFile(flow, ['check'], (err, stdout) => {
-	    console.log(stdout);
-	});
 
 	gulp.task(taskName, function (done) {
 		var stream = rollup(_.assign({}, {
