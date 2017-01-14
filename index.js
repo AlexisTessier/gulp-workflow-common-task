@@ -179,17 +179,27 @@ _addCommonTask('module-build', function(taskName, params) {
 			}, params.options.rollup))
 			.pipe(source(path.basename(params.entry), path.dirname(params.entry)))
 			.pipe(buffer())
-			.pipe(plumber())
-			.pipe(sourcemaps.init({loadMaps: true}))
-			.pipe(babel(params.options.babel))
+			.pipe(plumber());
+
+			if(params.sourcemaps === true){
+				stream = stream.pipe(sourcemaps.init({loadMaps: true}));
+			}
+
+			if(params.babel === true){
+				stream = stream.pipe(babel(params.options.babel))
+			}
 
 			if(params.uglify === true){
 				stream = stream.pipe(uglify(params.options.uglify));
 			}
 			
-			stream.pipe(rename(params.outputName))
-			.pipe(sourcemaps.write('.'))
-			.pipe(gulp.dest(params.dest))
+			stream = stream.pipe(rename(params.outputName));
+
+			if(params.sourcemaps === true){
+				stream = stream.pipe(sourcemaps.write('.'));
+			}
+
+			stream = stream.pipe(gulp.dest(params.dest))
 			.on('end', function() {
 				done();
 			});
@@ -200,6 +210,8 @@ _addCommonTask('module-build', function(taskName, params) {
 		entry: moduleBuildFlowtypeRollupEs6UglifyComputedParams.entry,
 		src: moduleBuildFlowtypeRollupEs6UglifyComputedParams.src,
 		outputName:'bundle.js',
+		sourcemaps: true,
+		babel: true,
 		uglify: true,
 		options: {
 			commonjs: {

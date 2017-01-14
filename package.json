@@ -1,6 +1,6 @@
 {
   "name": "@alexistessier/gulp-workflow-common-task",
-  "version": "2.10.0",
+  "version": "2.11.0",
   "description": "A set of common gulp task I use",
   "main": "index.js",
   "scripts": {

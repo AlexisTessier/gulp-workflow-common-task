@@ -1,7 +1,7 @@
 @alexistessier/gulp-workflow-common-task
 ================
 
-[![version](https://img.shields.io/badge/version-2.10.0-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
+[![version](https://img.shields.io/badge/version-2.11.0-blue.svg)](https://github.com/AlexisTessier/gulp-workflow-common-task#readme)
 [![npm version](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task.svg)](https://badge.fury.io/js/%40alexistessier%2Fgulp-workflow-common-task)
 
 [![Dependencies Status](https://david-dm.org/AlexisTessier/gulp-workflow-common-task.svg)](https://david-dm.org/AlexisTessier/gulp-workflow-common-task)
@@ -98,17 +98,27 @@ gulp.task('moduleBuild', function (done) {
 		}, params.options.rollup))
 		.pipe(source(path.basename(params.entry), path.dirname(params.entry)))
 		.pipe(buffer())
-		.pipe(plumber())
-		.pipe(sourcemaps.init({loadMaps: true}))
-		.pipe(babel(params.options.babel))
+		.pipe(plumber());
+
+		if(params.sourcemaps === true){
+			stream = stream.pipe(sourcemaps.init({loadMaps: true}));
+		}
+
+		if(params.babel === true){
+			stream = stream.pipe(babel(params.options.babel))
+		}
 
 		if(params.uglify === true){
 			stream = stream.pipe(uglify(params.options.uglify));
 		}
 		
-		stream.pipe(rename(params.outputName))
-		.pipe(sourcemaps.write('.'))
-		.pipe(gulp.dest(params.dest))
+		stream = stream.pipe(rename(params.outputName));
+
+		if(params.sourcemaps === true){
+			stream = stream.pipe(sourcemaps.write('.'));
+		}
+
+		stream = stream.pipe(gulp.dest(params.dest))
 		.on('end', function() {
 			done();
 		});
@@ -124,6 +134,8 @@ Available presets
 	entry|object|path.join(process.cwd(), "sources/index.js")
 	src|object|[path.join(process.cwd(), "sources/**/*.js")]
 	outputName|string|"bundle.js"
+	sourcemaps|boolean|true
+	babel|boolean|true
 	uglify|boolean|true
 	options|object|{"commonjs":{"include":"node_modules/**","exclude":[],"extensions":[".js"],"namedExports":{}},"rollup":{"format":"umd","moduleId":"gulp-workflow-common-task","moduleName":"GulpWorkflowCommonTask","indent":false},"nodeResolve":{"module":true,"jsnext":true,"main":true,"skip":[],"extensions":[".js",".json"],"preferBuiltins":true,"browser":true},"flow":{"all":false,"pretty":false},"uglify":{},"babel":{"presets":["es2015"]}}
 	dest|string|"build/"
@@ -179,7 +191,7 @@ Available presets
 	--------|--------|--------
 	src|object|[path.join(process.cwd(), "sources/**/*.js")]
 	options|object|{"polyglot":false}
-	information|object|{"name":"gulp-workflow-common-task","version":"2.10.0"}
+	information|object|{"name":"gulp-workflow-common-task","version":"2.11.0"}
 	dest|string|"documentation"
 
 
